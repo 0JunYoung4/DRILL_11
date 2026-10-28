@@ -1,11 +1,11 @@
 from pico2d import *
-import random
 
-from boy import Boy 
-from grass import Grass 
+from boy import Boy
+from grass import Grass
 
-# Game object class here
-
+running = False
+world = []
+boy = None
 
 def handle_events():
     global running
@@ -37,7 +37,6 @@ def reset_world():
 def update_world():
     for o in world:
         o.update()
-    pass
 
 
 def render_world():
@@ -47,15 +46,22 @@ def render_world():
     update_canvas()
 
 
-running = True
+def main():
+    global running
+    open_canvas(800, 600)
+    try:
+        reset_world()
+        running = True
+        while running:
+            handle_events()
+            if not running:
+                break
+            update_world()
+            render_world()
+            delay(0.01)
+    finally:
+        close_canvas()
 
-open_canvas()
-reset_world()
-# game loop
-while running:
-    handle_events()
-    update_world()
-    render_world()
-    delay(0.01)
-# finalization code
-close_canvas()
+
+if __name__ == '__main__':
+    main()
