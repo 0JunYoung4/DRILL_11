@@ -25,6 +25,9 @@ class AutoRun:
     def enter(boy):
         boy.autorun_started_at = get_time()
         boy.frame = 0
+        half_width = SPRITE_SIZE * AUTORUN_SCALE / 2
+        width = get_canvas_width()
+        boy.x = max(half_width, min(width - half_width, boy.x)) if width > 2 * half_width else width / 2
 
     @staticmethod
     def exit(boy):
@@ -36,7 +39,24 @@ class AutoRun:
             boy.finish_autorun()
             return
         boy.advance_animation(dt)
-        boy.x += boy.face_dir * RUN_SPEED * AUTORUN_SPEED_MULTIPLIER * dt
+        AutoRun.move(boy, dt)
+
+    @staticmethod
+    def move(boy, dt):
+        half_width = SPRITE_SIZE * AUTORUN_SCALE / 2
+        left, right = half_width, get_canvas_width() - half_width
+        span = right - left
+        if span <= 0:
+            boy.x = get_canvas_width() / 2
+            return
+        # Fold travel onto the visible interval, even across multiple bounces.
+        offset = boy.x - left
+        phase = offset if boy.face_dir == 1 else 2 * span - offset
+        phase = (phase + RUN_SPEED * AUTORUN_SPEED_MULTIPLIER * dt) % (2 * span)
+        if phase < span:
+            boy.x, boy.face_dir = left + phase, 1
+        else:
+            boy.x, boy.face_dir = right - (phase - span), -1
 
     @staticmethod
     def draw(boy):
