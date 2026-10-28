@@ -7,6 +7,14 @@ from pico2d import (
 )
 from transitions import Machine
 
+
+FRAME_COUNT = 8
+SPRITE_SIZE = 100
+RUN_SPEED = 500.0  # Pixels per second; original 5 px per 0.01 s frame.
+ANIMATION_FPS = 10.0
+IDLE_TIMEOUT = 5.0
+
+
 class Boy:
     def __init__(self):
         self.x, self.y = 400, 90
@@ -65,14 +73,15 @@ class Boy:
 
     def update(self):
         if self.state == 'IDLE':
-            if get_time() - self.idle_started_at >= 5.0:
+            if get_time() - self.idle_started_at >= IDLE_TIMEOUT:
                 self.fall_asleep()
             else:
-                self.frame = (self.frame + 1) % 8
+                self.frame = (self.frame + 1) % FRAME_COUNT
         elif self.state == 'RUN':
-            self.frame = (self.frame + 1) % 8
+            self.frame = (self.frame + 1) % FRAME_COUNT
             self.x += self.face_dir * 5
-            self.x = max(50, min(get_canvas_width() - 50, self.x))
+            half_width = SPRITE_SIZE / 2
+            self.x = max(half_width, min(get_canvas_width() - half_width, self.x))
 
     def draw(self):
         row = 300 if self.face_dir == 1 else 200
