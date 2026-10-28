@@ -15,6 +15,7 @@ ANIMATION_FPS = 10.0
 IDLE_TIMEOUT = 5.0
 AUTORUN_DURATION = 5.0
 AUTORUN_SPEED_MULTIPLIER = 2.0
+AUTORUN_SCALE = 2.0
 
 
 class AutoRun:
@@ -36,6 +37,15 @@ class AutoRun:
             return
         boy.advance_animation(dt)
         boy.x += boy.face_dir * RUN_SPEED * AUTORUN_SPEED_MULTIPLIER * dt
+
+    @staticmethod
+    def draw(boy):
+        size = SPRITE_SIZE * AUTORUN_SCALE
+        # Keep the bottom of the sprite at its ordinary standing height.
+        draw_y = boy.y + (size - SPRITE_SIZE) / 2
+        row = 100 if boy.face_dir == 1 else 0
+        boy.image.clip_draw(int(boy.frame) * SPRITE_SIZE, row,
+                            SPRITE_SIZE, SPRITE_SIZE, boy.x, draw_y, size, size)
 
 
 class Boy:
@@ -125,6 +135,9 @@ class Boy:
             self.x = max(half_width, min(get_canvas_width() - half_width, self.x))
 
     def draw(self):
+        if self.state == 'AUTORUN':
+            AutoRun.draw(self)
+            return
         row = 300 if self.face_dir == 1 else 200
         if self.state == 'RUN':
             row = 100 if self.face_dir == 1 else 0
