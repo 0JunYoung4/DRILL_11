@@ -13,6 +13,7 @@ SPRITE_SIZE = 100
 RUN_SPEED = 500.0  # Pixels per second; original 5 px per 0.01 s frame.
 ANIMATION_FPS = 10.0
 IDLE_TIMEOUT = 5.0
+AUTORUN_DURATION = 5.0
 
 
 class AutoRun:
@@ -29,6 +30,9 @@ class AutoRun:
 
     @staticmethod
     def update(boy, dt):
+        if get_time() - boy.autorun_started_at >= AUTORUN_DURATION:
+            boy.finish_autorun()
+            return
         boy.advance_animation(dt)
 
 
