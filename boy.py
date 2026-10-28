@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pico2d import (
     get_canvas_width, get_time, load_image,
-    SDL_KEYDOWN, SDL_KEYUP, SDLK_LEFT, SDLK_RIGHT, SDLK_SPACE,
+    SDL_KEYDOWN, SDL_KEYUP, SDLK_LEFT, SDLK_RIGHT, SDLK_SPACE, SDLK_a,
 )
 from transitions import Machine
 
@@ -73,6 +73,11 @@ class Boy:
         AutoRun.exit(self)
 
     def handle_event(self, event):
+        if event.type == SDL_KEYDOWN and event.key == SDLK_a:
+            if self.state == 'IDLE':
+                self.start_autorun()
+            return
+
         if self.state == 'SLEEP' and event.type == SDL_KEYDOWN and event.key == SDLK_SPACE:
             self.wake_up()
             return
