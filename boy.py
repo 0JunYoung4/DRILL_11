@@ -81,7 +81,7 @@ class Boy:
             transitions=[
                 {'trigger': 'fall_asleep', 'source': 'IDLE', 'dest': 'SLEEP'},
                 {'trigger': 'wake_up', 'source': 'SLEEP', 'dest': 'IDLE'},
-                {'trigger': 'start_run', 'source': ['IDLE', 'SLEEP'], 'dest': 'RUN'},
+                {'trigger': 'start_run', 'source': ['IDLE', 'SLEEP', 'AUTORUN'], 'dest': 'RUN'},
                 {'trigger': 'stop_run', 'source': 'RUN', 'dest': 'IDLE'},
                 {'trigger': 'start_autorun', 'source': 'IDLE', 'dest': 'AUTORUN'},
                 {'trigger': 'finish_autorun', 'source': 'AUTORUN', 'dest': 'IDLE'},
@@ -126,7 +126,7 @@ class Boy:
         if event.type == SDL_KEYDOWN:
             if event.key not in self.pressed_directions:
                 self.pressed_directions.append(event.key)
-            if self.state in ('IDLE', 'SLEEP'):
+            if self.state in ('IDLE', 'SLEEP', 'AUTORUN'):
                 self.start_run()
         elif event.key in self.pressed_directions:
             self.pressed_directions.remove(event.key)
