@@ -114,6 +114,69 @@ class BoyStateTests(unittest.TestCase):
         self.key(boy.SDLK_LEFT)
         self.assertEqual(self.boy.state, 'RUN')
 
+    def test_auto_uses_last_facing_and_moves_twice_as_fast(self):
+        self.boy.face_dir = -1
+        self.start_auto()
+        self.boy.update(0.1)
+        self.assertEqual(self.boy.x, 300)
+        self.assertEqual(self.boy.face_dir, -1)
+
+    def test_both_edges_reflect_including_exact_contact(self):
+        cases = ((690, 1, 690, -1), (110, -1, 110, 1),
+                 (690, 1, 700, -1), (110, -1, 100, 1))
+        for index, (x, direction, expected_x, expected_direction) in enumerate(cases):
+            with self.subTest(index=index):
+                self.boy.x, self.boy.face_dir = x, direction
+                boy.AutoRun.move(self.boy, 0.02 if index < 2 else 0.01)
+                self.assertAlmostEqual(self.boy.x, expected_x)
+                self.assertEqual(self.boy.face_dir, expected_direction)
+
+    def test_large_step_matches_many_small_steps(self):
+        self.start_auto()
+        self.boy.update(2.75)
+        expected = self.boy.x, self.boy.face_dir
+        self.boy.x, self.boy.face_dir = 400, 1
+        for _ in range(275):
+            self.boy.update(0.01)
+            self.assertGreaterEqual(self.boy.x, 100)
+            self.assertLessEqual(self.boy.x, 700)
+        self.assertEqual((self.boy.x, self.boy.face_dir), expected)
+
+    def test_enter_near_edge_clamps_enlarged_sprite(self):
+        for position, expected in ((50, 100), (750, 700)):
+            self.boy.x = position
+            self.start_auto()
+            self.assertEqual(self.boy.x, expected)
+            self.boy.finish_autorun()
+
+    def test_narrow_canvas_keeps_character_centered(self):
+        with patch.object(boy, 'get_canvas_width', return_value=160):
+            self.start_auto()
+            self.boy.update(0.5)
+            self.assertEqual(self.boy.x, 80)
+
+    def test_enlarged_draw_keeps_feet_and_restores_after_cancel(self):
+        self.start_auto()
+        self.boy.draw()
+        args = self.image.clip_draw.call_args.args
+        self.assertEqual(args[-2:], (200, 200))
+        self.assertEqual(args[5] - args[-1] / 2, self.boy.y - 50)
+        self.assertEqual(args[1], 100)
+        self.key(boy.SDLK_LEFT)
+        self.boy.draw()
+        args = self.image.clip_draw.call_args.args
+        self.assertEqual(len(args), 6)  # Default sprite dimensions after exit.
+        self.assertEqual(args[1], 0)
+        self.assertEqual(args[5], 90)
+
+    def test_frame_coordinates_are_integer_and_wrap(self):
+        self.start_auto()
+        self.boy.update(0.85)
+        self.boy.draw()
+        args = self.image.clip_draw.call_args.args
+        self.assertIsInstance(args[0], int)
+        self.assertEqual(args[0], 0)
+
 
 if __name__ == '__main__':
     unittest.main()
