@@ -14,6 +14,7 @@ RUN_SPEED = 500.0  # Pixels per second; original 5 px per 0.01 s frame.
 ANIMATION_FPS = 10.0
 IDLE_TIMEOUT = 5.0
 AUTORUN_DURATION = 5.0
+AUTORUN_SPEED_MULTIPLIER = 2.0
 
 
 class AutoRun:
@@ -34,6 +35,7 @@ class AutoRun:
             boy.finish_autorun()
             return
         boy.advance_animation(dt)
+        boy.x += boy.face_dir * RUN_SPEED * AUTORUN_SPEED_MULTIPLIER * dt
 
 
 class Boy:
