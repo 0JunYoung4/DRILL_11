@@ -15,6 +15,23 @@ ANIMATION_FPS = 10.0
 IDLE_TIMEOUT = 5.0
 
 
+class AutoRun:
+    """Own the automatic running state's lifecycle and behavior."""
+
+    @staticmethod
+    def enter(boy):
+        boy.autorun_started_at = get_time()
+        boy.frame = 0
+
+    @staticmethod
+    def exit(boy):
+        boy.frame = 0
+
+    @staticmethod
+    def update(boy, dt):
+        boy.advance_animation(dt)
+
+
 class Boy:
     def __init__(self):
         self.x, self.y = 400, 90
@@ -24,12 +41,14 @@ class Boy:
         self.image = load_image(str(Path(__file__).with_name('animation_sheet.png')))
         self.machine = Machine(
             model=self,
-            states=['IDLE', 'SLEEP', 'RUN'],
+            states=['IDLE', 'SLEEP', 'RUN', 'AUTORUN'],
             transitions=[
                 {'trigger': 'fall_asleep', 'source': 'IDLE', 'dest': 'SLEEP'},
                 {'trigger': 'wake_up', 'source': 'SLEEP', 'dest': 'IDLE'},
                 {'trigger': 'start_run', 'source': ['IDLE', 'SLEEP'], 'dest': 'RUN'},
                 {'trigger': 'stop_run', 'source': 'RUN', 'dest': 'IDLE'},
+                {'trigger': 'start_autorun', 'source': 'IDLE', 'dest': 'AUTORUN'},
+                {'trigger': 'finish_autorun', 'source': 'AUTORUN', 'dest': 'IDLE'},
             ],
             initial='IDLE',
             auto_transitions=False,
@@ -46,6 +65,12 @@ class Boy:
 
     def on_enter_RUN(self):
         self.frame = 0
+
+    def on_enter_AUTORUN(self):
+        AutoRun.enter(self)
+
+    def on_exit_AUTORUN(self):
+        AutoRun.exit(self)
 
     def handle_event(self, event):
         if self.state == 'SLEEP' and event.type == SDL_KEYDOWN and event.key == SDLK_SPACE:
@@ -75,7 +100,9 @@ class Boy:
         self.frame = (self.frame + ANIMATION_FPS * dt) % FRAME_COUNT
 
     def update(self, dt=0.01):
-        if self.state == 'IDLE':
+        if self.state == 'AUTORUN':
+            AutoRun.update(self, dt)
+        elif self.state == 'IDLE':
             if get_time() - self.idle_started_at >= IDLE_TIMEOUT:
                 self.fall_asleep()
             else:
