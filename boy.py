@@ -71,15 +71,18 @@ class Boy:
         elif self.state == 'RUN':
             self.stop_run()
 
-    def update(self):
+    def advance_animation(self, dt):
+        self.frame = (self.frame + ANIMATION_FPS * dt) % FRAME_COUNT
+
+    def update(self, dt=0.01):
         if self.state == 'IDLE':
             if get_time() - self.idle_started_at >= IDLE_TIMEOUT:
                 self.fall_asleep()
             else:
-                self.frame = (self.frame + 1) % FRAME_COUNT
+                self.advance_animation(dt)
         elif self.state == 'RUN':
-            self.frame = (self.frame + 1) % FRAME_COUNT
-            self.x += self.face_dir * 5
+            self.advance_animation(dt)
+            self.x += self.face_dir * RUN_SPEED * dt
             half_width = SPRITE_SIZE / 2
             self.x = max(half_width, min(get_canvas_width() - half_width, self.x))
 
@@ -92,4 +95,5 @@ class Boy:
                 0, row, 100, 100, self.face_dir * pi / 2, '', self.x, self.y - 25, 100, 100
             )
         else:
-            self.image.clip_draw(self.frame * 100, row, 100, 100, self.x, self.y)
+            self.image.clip_draw(int(self.frame) * SPRITE_SIZE, row,
+                                 SPRITE_SIZE, SPRITE_SIZE, self.x, self.y)

@@ -34,9 +34,9 @@ def reset_world():
 
 
 
-def update_world():
+def update_world(dt):
     for o in world:
-        o.update()
+        o.update(dt)
 
 
 def render_world():
@@ -52,11 +52,15 @@ def main():
     try:
         reset_world()
         running = True
+        previous_time = get_time()
         while running:
+            current_time = get_time()
+            dt = max(0.0, current_time - previous_time)
+            previous_time = current_time
             handle_events()
             if not running:
                 break
-            update_world()
+            update_world(dt)
             render_world()
             delay(0.01)
     finally:
